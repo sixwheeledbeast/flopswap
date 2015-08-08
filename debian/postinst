@@ -1,0 +1,41 @@
+#!/bin/sh
+
+echo "postinst start"
+  # Set Upstart event
+   echo "Setting up Upstart file"
+   cp /opt/flopswap/script/relocateswap /etc/event.d/relocateswap
+
+  # Set swap_sd as 1 (for latest CSSU upstart)
+   echo "Check mount-opts configuration"
+   if grep -q swap_sd=\"0\" /etc/default/mount-opts-overwrite; 
+    then
+       echo "swap_sd option found, editing..."
+       sed -i -e "s@swap_sd=\"0\"@swap_sd=\"1\"@" /etc/default/mount-opts-overwrite    
+       echo "Sucessfully replaced swap_sd with 1"
+   elif grep -q swap_sd=\"1\" /etc/default/mount-opts-overwrite;
+     then
+      echo "swap_sd 1 already configured"
+     else
+       echo "swap_sd not found"
+       echo "swap_sd=\"1\"" >> /etc/default/mount-opts-overwrite
+       echo "added swap_sd 1 value EOF"
+   fi
+
+# just in case, clean up any existing flopswap.sudoers file
+echo "Try to remove any previous flopswap sudoers files"
+rm /etc/sudoers.d/flopswap.sudoers
+
+# now, create the file
+echo "Create flopswap sudoers"
+
+echo "user ALL = NOPASSWD: /opt/flopswap/script/*
+user ALL = NOPASSWD: /opt/flopswap/bin/flopswap" > /etc/sudoers.d/flopswap.sudoers
+
+echo "Updating sudoers"
+update-sudoers
+
+echo "Updating icon cache"
+gtk-update-icon-cache -f /usr/share/icons/hicolor
+
+echo "postinst complete"
+exit 0

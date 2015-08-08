@@ -1,0 +1,75 @@
+Source: flopswap
+Section: user/utilities 
+Priority: optional
+Maintainer: Paul Healy <bugzillabeast@hotmail.co.uk>
+Build-Depends: debhelper (>= 5), libqt4-dev
+Standards-Version: 3.7.3
+Homepage: http://wiki.maemo.org/Flopswap
+XSBC-Bugtracker: http://talk.maemo.org/showthread.php?t=87985
+
+Package: flopswap
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+Description: Linux Swap management
+ GUI for monitoring and refreshing your swap spaces, this reduces system slow down from swap fragmentation.
+ Flopswap requires you to have two linux-swap partitions on your uSD card, aswell as the standard swap partition.
+ The standard device partition is used as a backup and can be activited within Flopswap to provide access for removing the uSD. 
+XB-Maemo-Display-Name: FlopSwap
+XB-Maemo-Icon-26: 
+ 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

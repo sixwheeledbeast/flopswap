@@ -1,0 +1,15 @@
+#!/bin/sh
+
+echo "Clean Upstart file"
+rm /etc/event.d/relocateswap
+
+echo "Set swap_sd off"
+sed -i -e "s@swap_sd=\"1\"@swap_sd=\"0\"@" /etc/default/mount-opts-overwrite
+
+echo "Remove sudoers"
+rm /etc/sudoers.d/flopswap.sudoers
+
+echo "Update sudoers"
+update-sudoers
+
+exit 0

@@ -1,0 +1,20 @@
+#!/bin/sh
+
+#Fix file permission bug from version 0.1.3
+echo "Checking flopswap QSettings file"
+  #UDV's
+   qfp="$(dpkg-query -W -f='${Version}\n' flopswap)"
+   fpv="0.1.4"
+  dpkg --compare-versions $qfp lt $fpv || ver=1
+    if [ "$ver" -eq 0 ]; then
+     echo "flopswap QSettings file needs to be removed"
+     rm /home/user/.config/flopswap/flopswap.conf
+     rmdir /home/user/.config/flopswap
+     echo "flopswap QSettings removed"
+    elif [ ! -d /home/user/.config/flopswap ]; then
+     echo "No QSettings Available"
+    else
+     echo "flopswap QSettings version OK"
+    fi
+
+exit 0

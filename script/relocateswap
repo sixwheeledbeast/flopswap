@@ -1,0 +1,64 @@
+description "Micro SD Swap Location on Startup"
+author "flopswap"
+
+start on MOUNTS_OK
+
+script
+
+ ##These scripts are to stop swap being stripped on boot
+ ##All status must return 0 or script will fail
+ ##Depending on CSSU Upstart version this script needs to select correct method
+
+  #Query Upstart if -lt use original flopswap method
+
+  #UDV's
+   qup="$(dpkg-query -W -f='${Version}\n' upstart)"
+   upv="0.3.8-68+0cssu5"
+   s="sleep"
+   son="swapon"
+   soff="swapoff"
+  # Find internal eMMC device, fallback to mmcblk0 (Like CSSU rcS-late)
+   mmclist="mmcblk0 mmcblk1"
+    for emmc in $mmclist
+     do
+      if [ ! -e /dev/$emmc ];
+       then
+     continue;
+      fi
+      device=`stat /dev/$emmc | sed -n 's/.*Device type: //p'`
+      major=`echo $device | sed 's/,.*//'`
+      minor=`echo $device | sed 's/.*,//'`
+      major=$((0x$major))
+      minor=$((0x$minor))
+       if grep -q internal /sys/dev/block/$major:$minor/device/../slot_name; 
+        then
+     break
+       fi
+    done
+   #Use above to set uSD location
+     if [ $emmc == "mmcblk0" ];
+      then 
+     usd=mmcblk1
+      else
+     usd=mmcblk0
+     fi
+   #Swap UDV's                           
+   swap0=$(blkid -c /dev/null -o device -t TYPE=swap | tr ' ' '\n' | grep $emmc)
+   swap1=$(blkid -c /dev/null -o device -t TYPE=swap | tr ' ' '\n' | grep $usd | sed -n 1p)
+   swap2=$(blkid -c /dev/null -o device -t TYPE=swap | tr ' ' '\n' | grep $usd | sed -n 2p)
+ # Script
+ # If two swaps on uSD are available continue else fallback.
+if [ -n "$swap1" -o -n "$swap2" ]
+ then
+  dpkg --compare-versions $qup lt $upv || ver=1
+    if [ "$ver" -eq 0 ]; then
+     $son $swap1;$s 5;$soff $swap0
+    elif [ "$ver" -ne 0 ]; then
+     $soff $swap2;$s 5;$soff $swap0
+    else
+     $son -a
+    fi
+ else
+  $son $swap0
+fi
+end script		
